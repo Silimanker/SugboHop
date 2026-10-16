@@ -33,7 +33,7 @@ Admin: http://localhost:8000/admin/
 ## API (Milestone 2)
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| GET | `/api/islands/?featured=true` | public | paginated, nested `stays` |
+| GET | `/api/islands/?featured=true&search=...` | public | paginated, nested `stays`; search matches island name, region, tagline and description |
 | GET | `/api/islands/<slug>/` | public | |
 | GET | `/api/stays/?island=<slug>` | public | |
 | GET | `/api/routes/?island=<slug>` | public | |
@@ -43,5 +43,5 @@ Admin: http://localhost:8000/admin/
 | GET/PATCH | `/api/auth/me/` | token | `Authorization: Token <key>` |
 | GET/POST | `/api/passes/` | token | own passes; POST `{route_id, travel_date}` |
 
-Seed data: `python manage.py seed_region7` (safe to re-run).
+Seed data: `python manage.py seed_region7` (safe to re-run; includes eight Region 7 destinations).
 JSON is snake_case; decimals are emitted as numbers.

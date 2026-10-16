@@ -56,9 +56,9 @@ class SeedTests(TestCase):
     def test_seed_is_idempotent(self):
         call_command("seed_region7", verbosity=0)
         call_command("seed_region7", verbosity=0)
-        self.assertEqual(Island.objects.count(), 4)
-        self.assertEqual(Stay.objects.count(), 4)
-        self.assertEqual(TransitRoute.objects.count(), 4)
+        self.assertEqual(Island.objects.count(), 8)
+        self.assertEqual(Stay.objects.count(), 8)
+        self.assertEqual(TransitRoute.objects.count(), 8)
 
 
 class ApiTests(APITestCase):
@@ -69,11 +69,17 @@ class ApiTests(APITestCase):
     def test_island_list_is_public_with_numeric_decimals(self):
         res = self.client.get("/api/islands/")
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(res.data["count"], 4)
+        self.assertEqual(res.data["count"], 8)
         body = res.json()["results"][0]
         self.assertIsInstance(body["rating"], float)
         self.assertIn("stays", body)
         self.assertIsInstance(body["stays"][0]["price_per_night"], float)
+
+    def test_island_search_matches_catalogue_content(self):
+        res = self.client.get("/api/islands/?featured=true&search=shark")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["count"], 1)
+        self.assertEqual(res.data["results"][0]["slug"], "malapascua-island")
 
     def test_island_detail_by_slug_and_filters(self):
         res = self.client.get("/api/islands/bantayan-island/")

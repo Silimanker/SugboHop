@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
+from django.db.models import Q
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -31,6 +32,14 @@ class IslandViewSet(viewsets.ReadOnlyModelViewSet):
         qs = Island.objects.prefetch_related("stays")
         if self.request.query_params.get("featured", "").lower() in ("1", "true"):
             qs = qs.filter(is_featured=True)
+        search = self.request.query_params.get("search", "").strip()
+        if search:
+            qs = qs.filter(
+                Q(name__icontains=search)
+                | Q(tagline__icontains=search)
+                | Q(description__icontains=search)
+                | Q(location_region__icontains=search)
+            )
         return qs
 
 
