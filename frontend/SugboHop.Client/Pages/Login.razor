@@ -1,0 +1,122 @@
+@page "/login"
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<PageTitle>Log in - SugboHop</PageTitle>
+
+<div class="min-h-[calc(100vh-4rem)] flex flex-col justify-center items-center p-6">
+    <div class="w-full max-w-md bg-white p-8 rounded-2xl border border-slate-100 shadow-lg">
+        <h1 class="font-heading text-2xl font-bold text-center text-sugbo-dark mb-1">Hop Into SugboHop</h1>
+        <p class="text-center text-xs text-slate-500 mb-6">
+            @(isRegister ? "Create your account to book ferry passes." : "Welcome back, hopper.")
+        </p>
+
+        @if (error is not null)
+        {
+            <div class="mb-4 rounded-xl border border-sugbo-sunrise bg-sugbo-sunrise/10 px-4 py-2 text-xs">@error</div>
+        }
+
+        <form class="space-y-4" @onsubmit="SubmitAsync">
+            @if (isRegister)
+            {
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">First name</label>
+                        <input type="text" @bind="firstName" @bind:event="oninput"
+                               class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sugbo-cyan text-sm" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Last name</label>
+                        <input type="text" @bind="lastName" @bind:event="oninput"
+                               class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sugbo-cyan text-sm" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Phone (optional)</label>
+                    <input type="tel" @bind="phone" @bind:event="oninput"
+                           class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sugbo-cyan text-sm" />
+                </div>
+            }
+            <div>
+                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Email Address</label>
+                <input type="email" required @bind="email" @bind:event="oninput"
+                       class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sugbo-cyan text-sm" />
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Password</label>
+                <input type="password" required minlength="@(isRegister ? 8 : 1)" @bind="password" @bind:event="oninput"
+                       class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sugbo-cyan text-sm" />
+            </div>
+            <button type="submit" disabled="@busy"
+                    class="w-full py-3 bg-gradient-to-r from-sugbo-cyan to-sugbo-mint text-sugbo-dark font-bold rounded-xl text-sm mt-2 disabled:opacity-60">
+                @(busy ? "Please wait…" : isRegister ? "Create Account" : "Log In")
+            </button>
+        </form>
+
+        <p class="mt-4 text-center text-xs text-slate-500">
+            @(isRegister ? "Already have an account?" : "New to SugboHop?")
+            <button type="button" @onclick="Toggle" class="font-bold text-sugbo-cyan hover:underline">
+                @(isRegister ? "Log in" : "Register")
+            </button>
+        </p>
+    </div>
+</div>
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    private bool isRegister;
+    private bool busy;
+    private string? error;
+    private string email = "";
+    private string password = "";
+    private string firstName = "";
+    private string lastName = "";
+    private string phone = "";
+
+    private void Toggle()
+    {
+        isRegister = !isRegister;
+        error = null;
+    }
+
+    private async Task SubmitAsync()
+    {
+        error = null;
+        busy = true;
+        try
+        {
+            if (isRegister)
+            {
+                await Auth.RegisterAsync(new RegisterRequest
+                {
+                    Email = email.Trim(),
+                    Password = password,
+                    FirstName = firstName.Trim(),
+                    LastName = lastName.Trim(),
+                    PhoneNumber = phone.Trim(),
+                });
+            }
+            else
+            {
+                await Auth.LoginAsync(new LoginRequest { Email = email.Trim(), Password = password });
+            }
+            Nav.NavigateTo(SafeTarget());
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    // Only allow in-app relative redirects.
+    private string SafeTarget() =>
+        string.IsNullOrWhiteSpace(ReturnUrl) || ReturnUrl.Contains("://") || ReturnUrl.StartsWith("//")
+            ? ""
+            : ReturnUrl.TrimStart('/');
+}

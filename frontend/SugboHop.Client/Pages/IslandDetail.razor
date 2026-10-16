@@ -1,0 +1,164 @@
+@page "/islands/{Slug}"
+@inject CatalogService Catalog
+@inject PassService Passes
+@inject AuthenticationStateProvider AuthState
+@inject NavigationManager Nav
+
+<PageTitle>@(island?.Name ?? "Island") - SugboHop</PageTitle>
+
+@if (error is not null)
+{
+    <div class="max-w-3xl mx-auto p-6">
+        <div class="rounded-2xl border border-sugbo-sunrise bg-sugbo-sunrise/10 p-4 text-sm">@error</div>
+        <a href="" class="mt-4 inline-block text-sm font-bold text-sugbo-cyan hover:underline">← Back to islands</a>
+    </div>
+}
+else if (island is null)
+{
+    <p class="p-6 text-sm text-slate-500">Loading island…</p>
+}
+else
+{
+    <div class="relative h-64 w-full">
+        <img src="@island.HeroImage" alt="@island.Name" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-t from-sugbo-dark to-transparent p-6 flex items-end">
+            <div>
+                <h1 class="font-heading text-3xl font-extrabold text-white">@island.Name</h1>
+                <p class="text-sm text-sugbo-mint font-semibold">@island.Tagline</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-100">
+                <h2 class="font-heading text-lg font-bold mb-2">About @island.Name</h2>
+                <p class="text-xs text-slate-600 leading-relaxed">@island.Description</p>
+                <p class="mt-3 text-xs text-slate-500">
+                    @island.LocationRegion • @(island.FerryDurationMins)-min ferry • ★ @island.Rating.ToString("0.0", CultureInfo.InvariantCulture)
+                </p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl border border-slate-100">
+                <h2 class="font-heading text-lg font-bold mb-3">Dockside Stays</h2>
+                @if (island.Stays.Count == 0)
+                {
+                    <p class="text-xs text-slate-500">No stays listed yet.</p>
+                }
+                @foreach (var stay in island.Stays)
+                {
+                    <div class="flex items-center gap-4 py-2">
+                        <img src="@stay.ImageUrl" alt="@stay.Name" class="w-16 h-16 rounded-xl object-cover" />
+                        <div class="flex-1">
+                            <div class="font-bold text-sm">@stay.Name</div>
+                            <div class="text-xs text-slate-500">@stay.StayType</div>
+                        </div>
+                        <div class="text-sm font-bold text-sugbo-dark">@Fmt.Peso(stay.PricePerNight)<span class="text-xs font-normal text-slate-500"> / night</span></div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="bg-sugbo-dark text-white p-6 rounded-2xl h-fit">
+            <h3 class="font-heading font-bold text-sugbo-mint">Reserve Ferry Pass</h3>
+
+            @if (Route is null)
+            {
+                <p class="mt-3 text-xs text-slate-300">No ferry schedule available yet.</p>
+            }
+            else
+            {
+                <p class="mt-3 text-sm font-semibold">@Route.Origin → @island.Name</p>
+                <p class="text-xs text-slate-300">@Route.OperatorName • Departs @Fmt.Time(Route.DepartureTime)</p>
+
+                <label class="block mt-4 text-xs font-bold uppercase text-slate-400 mb-1">Travel date</label>
+                <input type="date" min="@todayText" value="@travelDate"
+       @oninput="e => travelDate = e.Value?.ToString() ?? string.Empty"
+                       class="w-full px-3 py-2 rounded-xl bg-white text-sugbo-dark text-sm" />
+
+                @if (bookingError is not null)
+                {
+                    <p class="mt-3 text-xs text-sugbo-sunrise font-semibold">@bookingError</p>
+                }
+                @if (booked)
+                {
+                    <p class="mt-3 text-xs text-sugbo-mint font-semibold">
+                        Pass confirmed! <a href="profile" class="underline">View in My Profile</a>
+                    </p>
+                }
+
+                <button type="button" @onclick="BookAsync" disabled="@booking"
+                        class="w-full mt-4 py-2 bg-sugbo-cyan text-sugbo-dark font-bold text-xs rounded-xl disabled:opacity-60">
+                    @(booking ? "Booking…" : $"Book Pass ({Fmt.Peso(Route.Price)})")
+                </button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Slug { get; set; } = string.Empty;
+
+    private IslandDto? island;
+    private List<TransitRouteDto> routes = new();
+    private string? error;
+    private string? bookingError;
+    private bool booking;
+    private bool booked;
+    private readonly string todayText = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    private string travelDate = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private TransitRouteDto? Route => routes.FirstOrDefault();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        island = null;
+        error = null;
+        booked = false;
+        bookingError = null;
+        try
+        {
+            island = await Catalog.GetIslandAsync(Slug);
+            routes = await Catalog.GetRoutesAsync(Slug);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.StatusCode == 404 ? "We couldn't find that island." : ex.Message;
+        }
+    }
+
+    private async Task BookAsync()
+    {
+        bookingError = null;
+        booked = false;
+        if (Route is null) return;
+
+        if (!DateOnly.TryParse(travelDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            bookingError = "Please pick a travel date.";
+            return;
+        }
+
+        var state = await AuthState.GetAuthenticationStateAsync();
+        if (state.User.Identity?.IsAuthenticated != true)
+        {
+            Nav.NavigateTo($"login?returnUrl={Uri.EscapeDataString(Nav.ToBaseRelativePath(Nav.Uri))}");
+            return;
+        }
+
+        booking = true;
+        try
+        {
+            await Passes.BookAsync(Route.Id, date);
+            booked = true;
+        }
+        catch (ApiException ex)
+        {
+            bookingError = ex.Message;
+        }
+        finally
+        {
+            booking = false;
+        }
+    }
+}

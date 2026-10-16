@@ -1,0 +1,87 @@
+@page "/profile"
+@attribute [Authorize]
+@inject AuthService Auth
+@inject PassService Passes
+
+<PageTitle>My Profile - SugboHop</PageTitle>
+
+<main class="max-w-4xl mx-auto p-6">
+    @if (error is not null)
+    {
+        <div class="rounded-2xl border border-sugbo-sunrise bg-sugbo-sunrise/10 p-4 text-sm">@error</div>
+    }
+    else if (user is null)
+    {
+        <p class="text-sm text-slate-500">Loading your profile…</p>
+    }
+    else
+    {
+        <div class="bg-white rounded-2xl p-6 border border-slate-100 flex items-center gap-6">
+            @if (string.IsNullOrWhiteSpace(user.AvatarUrl))
+            {
+                <div class="w-16 h-16 rounded-full bg-sugbo-cyan text-sugbo-dark font-heading font-bold text-xl flex items-center justify-center">
+                    @char.ToUpperInvariant(user.DisplayName[0])
+                </div>
+            }
+            else
+            {
+                <img src="@user.AvatarUrl" alt="@user.DisplayName" class="w-16 h-16 rounded-full object-cover" />
+            }
+            <div class="flex-1">
+                <h1 class="font-heading text-xl font-bold">@user.DisplayName</h1>
+                <p class="text-xs text-slate-500">
+                    @user.Email@(string.IsNullOrWhiteSpace(user.PhoneNumber) ? "" : " • " + user.PhoneNumber)
+                </p>
+            </div>
+            <span class="text-xs bg-sugbo-mint/20 text-emerald-800 font-bold px-3 py-1 rounded-full">Verified Hopper</span>
+        </div>
+
+        <div class="mt-6">
+            <h2 class="font-heading text-lg font-bold mb-3">Active Ferry Passes</h2>
+            @if (activePasses.Count == 0)
+            {
+                <div class="bg-white p-6 rounded-xl border border-slate-100 text-center">
+                    <p class="text-sm text-slate-500">No active passes yet.</p>
+                    <a href="" class="mt-2 inline-block text-xs font-bold text-sugbo-cyan hover:underline">Explore islands →</a>
+                </div>
+            }
+            <div class="space-y-3">
+                @foreach (var pass in activePasses)
+                {
+                    <div class="bg-white p-4 rounded-xl border border-slate-100 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-bold text-sugbo-cyan">@pass.Route.Origin → @pass.Route.IslandName</span>
+                            <div class="text-xs text-slate-500">Departs: @Fmt.DateTimeLong(pass.DepartsAt)</div>
+                        </div>
+                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">Confirmed</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</main>
+
+@code {
+    private UserDto? user;
+    private List<FerryPassDto> activePasses = new();
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            user = await Auth.GetProfileAsync();
+            var all = await Passes.GetMyPassesAsync();
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            activePasses = all
+                .Where(p => p.Status == "confirmed" && p.TravelDate >= today)
+                .OrderBy(p => p.DepartsAt)
+                .ToList();
+        }
+        catch (ApiException ex)
+        {
+            // 401 already signed the user out; the router redirects to /login.
+            if (ex.StatusCode != 401) error = ex.Message;
+        }
+    }
+}

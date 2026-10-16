@@ -1,0 +1,29 @@
+@inherits LayoutComponentBase
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<nav class="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-100 h-16 flex items-center justify-between px-6">
+    <a href="" class="font-heading text-xl font-extrabold text-sugbo-cyan">SugboHop</a>
+    <div class="flex items-center gap-5">
+        <AuthorizeView>
+            <Authorized>
+                <a href="profile" class="text-sm font-semibold hover:text-sugbo-cyan">My Profile</a>
+                <button type="button" @onclick="LogoutAsync"
+                        class="text-sm font-semibold text-slate-500 hover:text-sugbo-sunrise">Log out</button>
+            </Authorized>
+            <NotAuthorized>
+                <a href="login" class="text-sm font-semibold hover:text-sugbo-cyan">Log in</a>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</nav>
+
+@Body
+
+@code {
+    private async Task LogoutAsync()
+    {
+        await Auth.LogoutAsync();
+        Nav.NavigateTo("");
+    }
+}

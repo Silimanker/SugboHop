@@ -5,3 +5,7 @@ db.sqlite3
 .venv/
 venv/
 staticfiles/
+bin/
+obj/
+.vs/
+*.user

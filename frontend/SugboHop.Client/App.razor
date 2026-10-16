@@ -1,0 +1,25 @@
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <Authorizing>
+                    <p class="p-6 text-sm text-slate-500">Checking your session…</p>
+                </Authorizing>
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found - SugboHop</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <div class="max-w-3xl mx-auto p-6 text-center">
+                    <h1 class="font-heading text-3xl font-bold mb-2">Lost at sea?</h1>
+                    <p class="text-sm text-slate-500 mb-4">That page doesn't exist.</p>
+                    <a href="" class="text-sugbo-cyan font-bold text-sm hover:underline">← Back to islands</a>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

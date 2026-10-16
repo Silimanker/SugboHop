@@ -1,0 +1,12 @@
+<div class="bg-white rounded-2xl overflow-hidden border border-slate-100 p-4 shadow-sm hover:shadow-md transition">
+    <img src="@Island.HeroImage" alt="@Island.Name" class="h-32 w-full object-cover rounded-xl" />
+    <h3 class="font-heading font-bold text-lg mt-2">@Island.Name</h3>
+    <p class="text-xs text-sugbo-cyan font-semibold">@Island.LocationRegion • @(Island.FerryDurationMins)-min ferry</p>
+    <p class="text-xs text-slate-500 mt-1">@Island.Tagline</p>
+    <a href="islands/@Island.Slug"
+       class="mt-4 block text-center bg-sugbo-sand hover:bg-sugbo-cyan hover:text-white font-bold py-1.5 text-xs rounded-xl">Explore →</a>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IslandDto Island { get; set; } = default!;
+}
