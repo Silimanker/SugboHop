@@ -7,6 +7,7 @@ router = DefaultRouter()
 router.register("islands", views.IslandViewSet, basename="island")
 router.register("stays", views.StayViewSet, basename="stay")
 router.register("routes", views.TransitRouteViewSet, basename="route")
+router.register("passes", views.FerryPassViewSet, basename="pass")
 
 urlpatterns = [
     path("auth/register/", views.RegisterView.as_view(), name="register"),

@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework import serializers
 
-from .models import Island, Stay, TransitRoute
+from .models import FerryPass, Island, Stay, TransitRoute
 
 User = get_user_model()
 
@@ -67,3 +68,20 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, style={"input_type": "password"})
+
+
+class FerryPassSerializer(serializers.ModelSerializer):
+    route = TransitRouteSerializer(read_only=True)
+    route_id = serializers.PrimaryKeyRelatedField(
+        source="route", queryset=TransitRoute.objects.all(), write_only=True
+    )
+
+    class Meta:
+        model = FerryPass
+        fields = ["id", "route", "route_id", "travel_date", "status", "created_at"]
+        read_only_fields = ["id", "status", "created_at"]
+
+    def validate_travel_date(self, value):
+        if value < timezone.localdate():
+            raise serializers.ValidationError("Travel date can't be in the past.")
+        return value

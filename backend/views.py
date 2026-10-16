@@ -1,13 +1,13 @@
 from django.contrib.auth import authenticate, get_user_model
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, mixins, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Island, Stay, TransitRoute
+from .models import FerryPass, Island, Stay, TransitRoute
 from .serializers import (
-    IslandSerializer, LoginSerializer, RegisterSerializer,
+    FerryPassSerializer, IslandSerializer, LoginSerializer, RegisterSerializer,
     StaySerializer, TransitRouteSerializer, UserSerializer,
 )
 
@@ -54,6 +54,23 @@ class TransitRouteViewSet(viewsets.ReadOnlyModelViewSet):
         qs = TransitRoute.objects.select_related("destination_island")
         slug = self.request.query_params.get("island")
         return qs.filter(destination_island__slug=slug) if slug else qs
+
+
+# ---- Ferry passes (authenticated, per-user) ----------------------------------
+
+class FerryPassViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
+                       mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """GET/POST /api/passes/ — the caller's own passes only."""
+    serializer_class = FerryPassSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return FerryPass.objects.filter(user=self.request.user).select_related(
+            "route__destination_island"
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 # ---- Auth ---------------------------------------------------------------------

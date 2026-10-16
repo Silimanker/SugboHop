@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -58,3 +59,21 @@ class TransitRoute(models.Model):
 
     def __str__(self):
         return f"{self.origin} → {self.destination_island.name} ({self.departure_time:%H:%M})"
+
+
+class FerryPass(models.Model):
+    class Status(models.TextChoices):
+        CONFIRMED = "confirmed", "Confirmed"
+        CANCELLED = "cancelled", "Cancelled"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="passes", on_delete=models.CASCADE)
+    route = models.ForeignKey(TransitRoute, related_name="passes", on_delete=models.CASCADE)
+    travel_date = models.DateField()
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.CONFIRMED)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["travel_date", "route__departure_time"]
+
+    def __str__(self):
+        return f"{self.user} · {self.route} · {self.travel_date}"

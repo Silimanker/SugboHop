@@ -114,3 +114,40 @@ class ApiTests(APITestCase):
 
         self.assertEqual(self.client.post("/api/auth/logout/").status_code, 204)
         self.assertEqual(self.client.get("/api/auth/me/").status_code, 401)
+
+
+# ---- Ferry passes -----------------------------------------------------------
+from datetime import timedelta
+
+from django.utils import timezone
+
+
+class FerryPassApiTests(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_region7", verbosity=0)
+        U = get_user_model()
+        cls.alice = U.objects.create_user("alice@x.com", "alice@x.com", "pw12345!x")
+        cls.bob = U.objects.create_user("bob@x.com", "bob@x.com", "pw12345!x")
+        cls.route = TransitRoute.objects.get(origin="Hagnaya Port")
+
+    def test_requires_auth(self):
+        self.assertEqual(self.client.get("/api/passes/").status_code, 401)
+
+    def test_book_and_list_only_own(self):
+        self.client.force_authenticate(self.alice)
+        day = (timezone.localdate() + timedelta(days=3)).isoformat()
+        res = self.client.post("/api/passes/", {"route_id": self.route.id, "travel_date": day}, format="json")
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(res.data["status"], "confirmed")
+        self.assertEqual(res.data["route"]["island_name"], "Bantayan Island")
+        self.assertEqual(self.client.get("/api/passes/").data["count"], 1)
+
+        self.client.force_authenticate(self.bob)
+        self.assertEqual(self.client.get("/api/passes/").data["count"], 0)
+
+    def test_past_date_rejected(self):
+        self.client.force_authenticate(self.alice)
+        day = (timezone.localdate() - timedelta(days=1)).isoformat()
+        res = self.client.post("/api/passes/", {"route_id": self.route.id, "travel_date": day}, format="json")
+        self.assertEqual(res.status_code, 400)

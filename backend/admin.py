@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Island, Stay, TransitRoute, User
+from .models import FerryPass, Island, Stay, TransitRoute, User
 
 
 @admin.register(User)
@@ -36,3 +36,9 @@ class StayAdmin(admin.ModelAdmin):
 class TransitRouteAdmin(admin.ModelAdmin):
     list_display = ("origin", "destination_island", "operator_name", "departure_time", "price")
     list_filter = ("destination_island",)
+
+
+@admin.register(FerryPass)
+class FerryPassAdmin(admin.ModelAdmin):
+    list_display = ("user", "route", "travel_date", "status")
+    list_filter = ("status", "travel_date")
