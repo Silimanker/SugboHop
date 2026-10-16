@@ -1,0 +1,185 @@
+@page "/"
+@inject CatalogService Catalog
+
+<PageTitle>Explore the Visayas - SugboHop</PageTitle>
+
+<main class="catalog-page">
+    <section class="catalog-hero" aria-labelledby="hero-title">
+        <div class="hero-shade"></div>
+        <div class="hero-content">
+            <span class="eyebrow"><span class="eyebrow-dot"></span> THE VISAYAS, YOUR WAY</span>
+            <h1 id="hero-title">Find your own<br /><em>piece of paradise.</em></h1>
+            <p>Slow mornings, clear water, and island stories worth taking home. Your next escape starts here.</p>
+
+            <form class="hero-search" @onsubmit="SearchAsync" @onsubmit:preventDefault>
+                <label class="search-field">
+                    <span class="search-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 4.2 4.2"></path></svg>
+                    </span>
+                    <span class="search-input-wrap">
+                        <span class="search-label">WHERE TO?</span>
+                        <input @bind="searchTerm" placeholder="Try “Bantayan” or “diving”" aria-label="Search islands and experiences" />
+                    </span>
+                </label>
+                <button type="submit" class="search-button" disabled="@loading">Explore islands <span aria-hidden="true">→</span></button>
+            </form>
+            <div class="hero-note"><span aria-hidden="true">✦</span> Curated island escapes across Central Visayas</div>
+        </div>
+        <div class="hero-caption"><span>10° 18' N&nbsp; · &nbsp;123° 54' E</span><span>CENTRAL VISAYAS, PHILIPPINES</span></div>
+    </section>
+
+    <section class="discovery-section" aria-labelledby="islands-heading">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">A LITTLE CLOSER TO THE SEA</span>
+                <h2 id="islands-heading">Islands to fall for<span>.</span></h2>
+                <p>Handpicked corners of Region 7, each with its own kind of magic.</p>
+            </div>
+            <div class="catalog-count"><strong>@(islands?.Count ?? 0)</strong><span>islands<br />to discover</span></div>
+        </div>
+
+        @if (error is not null)
+        {
+            <div class="catalog-message error-message" role="alert">
+                <span>@error</span>
+                <button type="button" @onclick="() => LoadAsync(searchTerm)">Try again</button>
+            </div>
+        }
+        else if (islands is null)
+        {
+            <div class="island-grid" aria-label="Loading islands">
+                @for (var i = 0; i < 4; i++)
+                {
+                    <div class="island-skeleton"><div></div><span></span><span></span></div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="catalog-toolbar">
+                <div class="region-filters" role="group" aria-label="Filter islands by region">
+                    @foreach (var region in Regions)
+                    {
+                        <button type="button"
+                                class="region-filter @(selectedRegion == region ? "active" : null)"
+                                aria-pressed="@(selectedRegion == region)"
+                                @onclick="() => selectedRegion = region">
+                            @region
+                        </button>
+                    }
+                </div>
+                <label class="sort-control">
+                    <span>Sort by</span>
+                    <select @bind="sortOrder" aria-label="Sort islands">
+                        <option value="recommended">Recommended</option>
+                        <option value="rating">Top rated</option>
+                        <option value="duration">Shortest ferry</option>
+                        <option value="name">Island name</option>
+                    </select>
+                </label>
+            </div>
+
+            @if (VisibleIslands.Count == 0)
+            {
+                <div class="empty-state">
+                    <span class="empty-icon" aria-hidden="true">⌁</span>
+                    <h3>No islands found just yet</h3>
+                    <p>Try another search or choose a different region to find your next escape.</p>
+                    <button type="button" class="clear-button" @onclick="ClearSearch">Clear search &amp; filters</button>
+                </div>
+            }
+            else
+            {
+                <div class="island-grid">
+                    @foreach (var island in VisibleIslands)
+                    {
+                        <IslandCard Island="island" />
+                    }
+                </div>
+                <div class="discovery-note"><span aria-hidden="true">☼</span> The best plans leave a little room for the unexpected.</div>
+            }
+        }
+    </section>
+
+    <section class="trip-banner" aria-label="Plan your island escape">
+        <div class="trip-banner-copy">
+            <span class="section-kicker">YOUR NEXT STORY STARTS HERE</span>
+            <h2>Less planning.<br />More <em>paradise.</em></h2>
+            <p>Find a ferry, pick a stay, and let the sea set the pace.</p>
+            <a href="#islands-heading" class="trip-link">Find your island <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="trip-banner-art" aria-hidden="true">
+            <span class="sun-disc"></span>
+            <span class="palm palm-one">♧</span>
+            <span class="palm palm-two">♧</span>
+            <span class="art-wave wave-one"></span>
+            <span class="art-wave wave-two"></span>
+            <span class="art-wave wave-three"></span>
+            <span class="art-island"></span>
+        </div>
+    </section>
+</main>
+
+@code {
+    private static readonly string[] Regions = ["All islands", "Cebu", "Bohol", "Negros Oriental", "Siquijor"];
+    private List<IslandDto>? islands;
+    private string? error;
+    private string searchTerm = string.Empty;
+    private string selectedRegion = "All islands";
+    private string sortOrder = "recommended";
+    private bool loading;
+
+    private List<IslandDto> VisibleIslands
+    {
+        get
+        {
+            if (islands is null) return [];
+
+            IEnumerable<IslandDto> result = islands;
+            if (selectedRegion != "All islands")
+            {
+                result = result.Where(island =>
+                    island.LocationRegion.Contains(selectedRegion, StringComparison.OrdinalIgnoreCase));
+            }
+
+            result = sortOrder switch
+            {
+                "rating" => result.OrderByDescending(island => island.Rating),
+                "duration" => result.OrderBy(island => island.FerryDurationMins),
+                "name" => result.OrderBy(island => island.Name, StringComparer.OrdinalIgnoreCase),
+                _ => result.OrderByDescending(island => island.IsFeatured).ThenByDescending(island => island.Rating),
+            };
+            return result.ToList();
+        }
+    }
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private Task SearchAsync() => LoadAsync(searchTerm);
+
+    private async Task LoadAsync(string search = "")
+    {
+        error = null;
+        loading = true;
+        try
+        {
+            islands = await Catalog.GetIslandsAsync(featuredOnly: true, search);
+        }
+        catch (ApiException ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task ClearSearch()
+    {
+        searchTerm = string.Empty;
+        selectedRegion = "All islands";
+        sortOrder = "recommended";
+        await LoadAsync();
+    }
+}

@@ -1,0 +1,32 @@
+<article class="island-card">
+    <a class="card-image-link" href="islands/@Island.Slug" aria-label="Explore @Island.Name">
+        <img src="@Island.HeroImage" alt="@Island.Name" class="card-image" loading="lazy" />
+        <span class="card-location">@RegionLabel</span>
+        <span class="card-rating"><span aria-hidden="true">★</span> @Island.Rating.ToString("0.0", CultureInfo.InvariantCulture)</span>
+    </a>
+    <div class="card-content">
+        <div class="card-title-row">
+            <h3>@Island.Name</h3>
+            <span class="card-arrow" aria-hidden="true">↗</span>
+        </div>
+        <p class="card-tagline">@Island.Tagline</p>
+        <div class="card-divider"></div>
+        <div class="card-meta">
+            <span><span aria-hidden="true">◷</span> @FerryDuration</span>
+            @if (Island.Stays.Count > 0)
+            {
+                <span>Stays from <strong>@Fmt.Peso(Island.Stays.Min(stay => stay.PricePerNight))</strong></span>
+            }
+        </div>
+        <a class="card-explore" href="islands/@Island.Slug">Explore island <span aria-hidden="true">→</span></a>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public IslandDto Island { get; set; } = default!;
+
+    private string RegionLabel => Island.LocationRegion.Split(',')[0];
+    private string FerryDuration => Island.FerryDurationMins >= 60
+        ? $"{Island.FerryDurationMins / 60}h{(Island.FerryDurationMins % 60 == 0 ? string.Empty : $" {Island.FerryDurationMins % 60}m")} ferry"
+        : $"{Island.FerryDurationMins} min ferry";
+}

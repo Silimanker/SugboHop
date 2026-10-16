@@ -1,13 +1,21 @@
 using SugboHop.Shared.Models;
+using SugboHop.Client.Services;
 
-namespace SugboHop.Client.Services;
+namespace SugboHop.Client.Features.Catalog.Services;
 
 public class CatalogService(ApiClient api)
 {
-    public async Task<List<IslandDto>> GetIslandsAsync(bool featuredOnly = false)
+    public async Task<List<IslandDto>> GetIslandsAsync(bool featuredOnly = false, string search = "")
     {
+        var query = new List<string>();
+        if (featuredOnly) query.Add("featured=true");
+        if (!string.IsNullOrWhiteSpace(search))
+            query.Add($"search={Uri.EscapeDataString(search.Trim())}");
+
+        var endpoint = "api/islands/";
+        if (query.Count > 0) endpoint += $"?{string.Join("&", query)}";
         var page = await api.GetAsync<PagedResult<IslandDto>>(
-            featuredOnly ? "api/islands/?featured=true" : "api/islands/");
+            endpoint);
         return page.Results;
     }
 
