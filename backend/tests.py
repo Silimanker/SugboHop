@@ -45,3 +45,72 @@ class ModelTests(TestCase):
             phone_number="+63 917 123 4567",
         )
         self.assertEqual(user.phone_number, "+63 917 123 4567")
+
+
+# ---- Milestone 2: API, auth, seed ---------------------------------------------
+from django.core.management import call_command
+from rest_framework.test import APITestCase
+
+
+class SeedTests(TestCase):
+    def test_seed_is_idempotent(self):
+        call_command("seed_region7", verbosity=0)
+        call_command("seed_region7", verbosity=0)
+        self.assertEqual(Island.objects.count(), 4)
+        self.assertEqual(Stay.objects.count(), 4)
+        self.assertEqual(TransitRoute.objects.count(), 4)
+
+
+class ApiTests(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        call_command("seed_region7", verbosity=0)
+
+    def test_island_list_is_public_with_numeric_decimals(self):
+        res = self.client.get("/api/islands/")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["count"], 4)
+        body = res.json()["results"][0]
+        self.assertIsInstance(body["rating"], float)
+        self.assertIn("stays", body)
+        self.assertIsInstance(body["stays"][0]["price_per_night"], float)
+
+    def test_island_detail_by_slug_and_filters(self):
+        res = self.client.get("/api/islands/bantayan-island/")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["ferry_duration_mins"], 60)
+        routes = self.client.get("/api/routes/?island=bantayan-island").json()["results"]
+        self.assertEqual(len(routes), 1)
+        self.assertEqual(routes[0]["origin"], "Hagnaya Port")
+        stays = self.client.get("/api/stays/?island=panglao-island").json()["results"]
+        self.assertEqual(len(stays), 1)
+
+    def test_catalogue_is_read_only(self):
+        self.assertEqual(self.client.post("/api/islands/", {}).status_code, 405)
+
+    def test_register_login_me_logout(self):
+        reg = self.client.post("/api/auth/register/", {
+            "email": "Daniel@Example.com", "password": "hopper-2026!",
+            "first_name": "Daniel", "last_name": "Duarte", "phone_number": "+63 917 123 4567",
+        })
+        self.assertEqual(reg.status_code, 201)
+        self.assertEqual(reg.data["user"]["email"], "daniel@example.com")
+
+        dup = self.client.post("/api/auth/register/", {"email": "daniel@example.com", "password": "hopper-2026!"})
+        self.assertEqual(dup.status_code, 400)
+
+        bad = self.client.post("/api/auth/login/", {"email": "daniel@example.com", "password": "nope"})
+        self.assertEqual(bad.status_code, 400)
+
+        login = self.client.post("/api/auth/login/", {"email": "daniel@example.com", "password": "hopper-2026!"})
+        self.assertEqual(login.status_code, 200)
+        token = login.data["token"]
+
+        self.assertEqual(self.client.get("/api/auth/me/").status_code, 401)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+        me = self.client.patch("/api/auth/me/", {"phone_number": "+63 900 000 0000"}, format="json")
+        self.assertEqual(me.status_code, 200)
+        self.assertEqual(me.data["phone_number"], "+63 900 000 0000")
+
+        self.assertEqual(self.client.post("/api/auth/logout/").status_code, 204)
+        self.assertEqual(self.client.get("/api/auth/me/").status_code, 401)
