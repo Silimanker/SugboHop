@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SugboHop.Shared.Models
+namespace SugboHop.Client.Models
 {
     public class UserDto
     {

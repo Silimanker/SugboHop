@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
-using SugboHop.Shared.Models;
+using SugboHop.Client.Models;
 
 namespace SugboHop.Client.Services;
 

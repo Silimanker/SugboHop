@@ -1,4 +1,4 @@
-namespace SugboHop.Shared.Models
+namespace SugboHop.Client.Models
 {
     public class IslandDto
     {

@@ -1,7 +1,6 @@
-using SugboHop.Shared.Models;
-using SugboHop.Client.Services;
+using SugboHop.Client.Models;
 
-namespace SugboHop.Client.Features.Catalog.Services;
+namespace SugboHop.Client.Services;
 
 public class CatalogService(ApiClient api)
 {

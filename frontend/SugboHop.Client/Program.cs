@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using SugboHop.Client;
-using SugboHop.Client.Features.Catalog.Services;
 using SugboHop.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
