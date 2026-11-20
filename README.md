@@ -8,7 +8,7 @@ routes, create an account, and manage ferry passes.
 
 - **Backend:** Django and Django REST Framework
 - **Frontend:** Blazor WebAssembly on .NET 8
-- **Database:** SQLite (`db.sqlite3`)
+- **Database:** Supabase PostgreSQL (session pooler via `DATABASE_URL`)
 
 ## Requirements
 
@@ -38,6 +38,8 @@ packages:
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+Copy-Item .env.example .env
+# Edit .env and set DATABASE_URL to your Supabase session pooler URL.
 python run.py
 ```
 
@@ -47,10 +49,19 @@ python run.py
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+cp .env.example .env
+# Edit .env and set DATABASE_URL to your Supabase session pooler URL.
 python run.py
 ```
 
-The final command, `python run.py`, applies database migrations, adds the
+The app loads `.env` automatically. `DATABASE_URL` is required and must use the
+Supabase **session pooler** (port `5432`), not the transaction pooler:
+
+```dotenv
+DATABASE_URL=postgresql://postgres.<project-ref>:<password>@<region>.pooler.supabase.com:5432/postgres?sslmode=require
+```
+
+The final command, `python run.py`, applies database migrations to Supabase, adds the
 Region 7 sample data if the database has no islands, then starts both servers
 and opens the app:
 
@@ -60,11 +71,11 @@ and opens the app:
 
 Press **Ctrl+C** in the terminal to stop both servers. The launcher requires
 ports `5000` and `8000` to be free. On later runs, it reuses the existing
-SQLite database and does not replace its data.
+Supabase data; seeding only happens when the island catalogue is empty.
 
 ## Run the servers separately
 
-From the project root, prepare the database and sample data:
+From the project root, with `.env` configured, prepare the Supabase database and sample data:
 
 ```bash
 python manage.py migrate
@@ -107,8 +118,11 @@ and ferry-pass endpoints require authentication.
 Run the backend tests from the project root:
 
 ```bash
-python manage.py test
+python manage.py test --settings=config.settings_test
 ```
+
+The test settings use an in-memory SQLite database because the Supabase pooler
+role cannot create Django's temporary `test_<name>` database.
 
 Create a Django admin account when needed:
 
@@ -116,8 +130,10 @@ Create a Django admin account when needed:
 python manage.py createsuperuser
 ```
 
-The backend reads optional configuration from environment variables:
+The backend reads configuration from environment variables (or a local `.env`
+file). `DATABASE_URL` is required; the rest are optional:
 
+- `DATABASE_URL` (Supabase session pooler PostgreSQL URL)
 - `DJANGO_SECRET_KEY`
 - `DJANGO_DEBUG` (defaults to `True`)
 - `DJANGO_ALLOWED_HOSTS` (comma-separated; defaults to `localhost,127.0.0.1`)
@@ -138,6 +154,8 @@ backend/                         Django API application
   urls.py                       API routes
   views.py                      API endpoints
 config/                          Django project configuration and entry points
+  settings.py                   Supabase DATABASE_URL configuration
+  settings_test.py              Isolated SQLite settings for tests
 frontend/SugboHop.Client/        Blazor WebAssembly app and its .NET project file
   Components/                    Reusable UI components
   Layout/                        Shared page layout
