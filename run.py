@@ -77,7 +77,8 @@ def stop(proc):
 
 def preflight():
     if subprocess.run(
-        [sys.executable, "-c", "import django, rest_framework, corsheaders"],
+        [sys.executable, "-c",
+         "import django, rest_framework, corsheaders, dj_database_url, dotenv, psycopg"],
         capture_output=True,
     ).returncode != 0:
         die("Python dependencies missing. Activate your venv, then run:\n"
