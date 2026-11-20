@@ -8,6 +8,7 @@ namespace SugboHop.Client.Models
         public TransitRouteDto Route { get; set; } = new();
         public DateOnly TravelDate { get; set; }
         public string Status { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
 
         [JsonIgnore]
         public DateTime DepartsAt =>

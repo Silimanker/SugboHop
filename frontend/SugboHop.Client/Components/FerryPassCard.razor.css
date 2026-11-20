@@ -1,0 +1,206 @@
+.pass-card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #dbe7e4;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(18, 59, 64, .06);
+}
+
+.pass-card--muted {
+    opacity: .82;
+}
+
+.pass-card__top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.05rem 1.2rem 1rem;
+    background: linear-gradient(135deg, #0f172a, #134e4a);
+    color: #fff;
+}
+
+.pass-card__headline {
+    min-width: 0;
+}
+
+.pass-card__eyebrow {
+    display: block;
+    color: #00ffbf;
+    font-size: .6rem;
+    font-weight: 800;
+    letter-spacing: .12em;
+}
+
+.pass-card__headline h3 {
+    overflow-wrap: anywhere;
+    margin: .3rem 0 .15rem;
+    font-family: Outfit, sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -.02em;
+}
+
+.pass-card__headline h3 span {
+    color: #00bfff;
+}
+
+.pass-card__passenger {
+    margin: 0;
+    color: #cbd5e1;
+    font-size: .72rem;
+}
+
+.pass-card__status {
+    align-self: flex-start;
+    flex-shrink: 0;
+    padding: .35rem .7rem;
+    border-radius: 999px;
+    font-size: .6rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.pass-card__status--confirmed {
+    border: 1px solid rgba(0, 255, 191, .35);
+    background: rgba(0, 255, 191, .16);
+    color: #00ffbf;
+}
+
+.pass-card__status--muted {
+    border: 1px solid rgba(255, 255, 255, .2);
+    background: rgba(255, 255, 255, .12);
+    color: #e2e8f0;
+}
+
+.pass-card__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .75rem;
+    padding: 1rem 1.2rem;
+}
+
+.pass-card__grid > div {
+    min-width: 0;
+}
+
+.pass-card__grid span {
+    display: block;
+    color: #94a3b8;
+    font-size: .57rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.pass-card__grid strong {
+    display: block;
+    margin-top: .2rem;
+    color: #173f43;
+    font-size: .76rem;
+    overflow-wrap: anywhere;
+}
+
+.pass-card__toggle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: .55rem 1.2rem;
+    border: 0;
+    border-top: 1px dashed #d7e3df;
+    background: #f8fbfa;
+    color: #197f82;
+    font-size: .68rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .16s ease;
+}
+
+.pass-card__toggle:hover {
+    background: #eef8f5;
+}
+
+.pass-card__details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .6rem 1rem;
+    margin: 0;
+    padding: .9rem 1.2rem 1rem;
+    background: #f8fbfa;
+}
+
+.pass-card__details > div {
+    min-width: 0;
+}
+
+.pass-card__details dt {
+    color: #94a3b8;
+    font-size: .57rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.pass-card__details dd {
+    margin: .15rem 0 0;
+    color: #31595b;
+    font-size: .72rem;
+    overflow-wrap: anywhere;
+}
+
+.pass-card__perforation {
+    position: relative;
+    height: 0;
+    margin: 0 1.2rem;
+    border-top: 1px dashed #cbd8d4;
+}
+
+.pass-card__perforation::before,
+.pass-card__perforation::after {
+    position: absolute;
+    top: -9px;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #dbe7e4;
+    border-radius: 50%;
+    background: #fff;
+    content: "";
+}
+
+.pass-card__perforation::before {
+    left: -30px;
+}
+
+.pass-card__perforation::after {
+    right: -30px;
+}
+
+.pass-card__footer {
+    display: flex;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .7rem 1.2rem .85rem;
+    color: #94a3b8;
+    font-size: .58rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+    .pass-card__top {
+        flex-direction: column;
+        gap: .75rem;
+    }
+
+    .pass-card__status {
+        align-self: flex-start;
+    }
+
+    .pass-card__grid,
+    .pass-card__details {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

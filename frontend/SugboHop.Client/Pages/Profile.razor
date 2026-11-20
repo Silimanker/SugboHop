@@ -36,47 +36,76 @@
             <span class="text-xs bg-sugbo-mint/20 text-emerald-800 font-bold px-3 py-1 rounded-full">Verified Hopper</span>
         </div>
 
-        <div class="mt-6">
-            <h2 class="font-heading text-lg font-bold mb-3">Active Ferry Passes</h2>
-            @if (activePasses.Count == 0)
+        <div class="mt-8">
+            <div class="flex items-end justify-between gap-4 mb-3">
+                <h2 class="font-heading text-lg font-bold">Active Ferry Passes</h2>
+                <span class="text-xs text-slate-500">@ActivePasses.Count upcoming</span>
+            </div>
+            @if (ActivePasses.Count == 0)
             {
                 <div class="bg-white p-6 rounded-xl border border-slate-100 text-center">
                     <p class="text-sm text-slate-500">No active passes yet.</p>
-                    <a href="" class="mt-2 inline-block text-xs font-bold text-sugbo-cyan hover:underline">Explore islands →</a>
+                    <a href="/" class="mt-2 inline-block text-xs font-bold text-sugbo-cyan hover:underline">Explore islands →</a>
                 </div>
             }
-            <div class="space-y-3">
-                @foreach (var pass in activePasses)
-                {
-                    <div class="bg-white p-4 rounded-xl border border-slate-100 flex justify-between items-center">
-                        <div>
-                            <span class="text-xs font-bold text-sugbo-cyan">@pass.Route.Origin → @pass.Route.IslandName</span>
-                            <div class="text-xs text-slate-500">Departs: @Fmt.DateTimeLong(pass.DepartsAt)</div>
-                        </div>
-                        <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">Confirmed</span>
-                    </div>
-                }
-            </div>
+            else
+            {
+                <div class="space-y-4">
+                    @foreach (var pass in ActivePasses)
+                    {
+                        <FerryPassCard Pass="pass"
+                                       PassengerName="@user.DisplayName"
+                                       PassengerEmail="@user.Email"
+                                       PassengerPhone="@user.PhoneNumber" />
+                    }
+                </div>
+            }
         </div>
+
+        @if (PastPasses.Count > 0)
+        {
+            <div class="mt-9">
+                <h2 class="font-heading text-lg font-bold mb-3">Past &amp; cancelled passes</h2>
+                <div class="space-y-4">
+                    @foreach (var pass in PastPasses)
+                    {
+                        <FerryPassCard Pass="pass"
+                                       PassengerName="@user.DisplayName"
+                                       PassengerEmail="@user.Email"
+                                       PassengerPhone="@user.PhoneNumber" />
+                    }
+                </div>
+            </div>
+        }
     }
 </main>
 
 @code {
     private UserDto? user;
-    private List<FerryPassDto> activePasses = new();
+    private List<FerryPassDto> allPasses = new();
     private string? error;
+
+    private DateOnly Today => DateOnly.FromDateTime(DateTime.Today);
+
+    private List<FerryPassDto> ActivePasses => allPasses
+        .Where(p => IsConfirmed(p) && p.TravelDate >= Today)
+        .OrderBy(p => p.DepartsAt)
+        .ToList();
+
+    private List<FerryPassDto> PastPasses => allPasses
+        .Where(p => !IsConfirmed(p) || p.TravelDate < Today)
+        .OrderByDescending(p => p.DepartsAt)
+        .ToList();
+
+    private static bool IsConfirmed(FerryPassDto pass) =>
+        pass.Status.Equals("confirmed", StringComparison.OrdinalIgnoreCase);
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             user = await Auth.GetProfileAsync();
-            var all = await Passes.GetMyPassesAsync();
-            var today = DateOnly.FromDateTime(DateTime.Today);
-            activePasses = all
-                .Where(p => p.Status == "confirmed" && p.TravelDate >= today)
-                .OrderBy(p => p.DepartsAt)
-                .ToList();
+            allPasses = await Passes.GetMyPassesAsync();
         }
         catch (ApiException ex)
         {

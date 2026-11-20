@@ -10,6 +10,9 @@ public static class Fmt
     public static string Time(TimeSpan time) =>
         DateTime.Today.Add(time).ToString("hh:mm tt", CultureInfo.InvariantCulture);
 
+    public static string Date(DateOnly value) =>
+        value.ToString("ddd, MMM d, yyyy", CultureInfo.InvariantCulture);
+
     public static string DateTimeLong(DateTime value) =>
         value.ToString("MMM d, yyyy • hh:mm tt", CultureInfo.InvariantCulture);
 }

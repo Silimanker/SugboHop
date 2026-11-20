@@ -1,0 +1,94 @@
+<article class="pass-card @(IsConfirmed ? null : "pass-card--muted")">
+    <div class="pass-card__top">
+        <div class="pass-card__headline">
+            <span class="pass-card__eyebrow">@BookingReference</span>
+            <h3>@Pass.Route.Origin <span aria-hidden="true">→</span> @Pass.Route.IslandName</h3>
+            <p class="pass-card__passenger">@PassengerName</p>
+        </div>
+        <span class="pass-card__status @StatusClass">@StatusLabel</span>
+    </div>
+
+    <div class="pass-card__grid">
+        <div>
+            <span>Travel date</span>
+            <strong>@Fmt.Date(Pass.TravelDate)</strong>
+        </div>
+        <div>
+            <span>Departure</span>
+            <strong>@Fmt.Time(Pass.Route.DepartureTime)</strong>
+        </div>
+        <div>
+            <span>Operator</span>
+            <strong>@Pass.Route.OperatorName</strong>
+        </div>
+        <div>
+            <span>Fare</span>
+            <strong>@Fmt.Peso(Pass.Route.Price)</strong>
+        </div>
+    </div>
+
+    <button type="button"
+            class="pass-card__toggle"
+            aria-expanded="@showDetails"
+            @onclick="() => showDetails = !showDetails">
+        @(showDetails ? "Hide pass details" : "View pass details")
+        <span aria-hidden="true">@(showDetails ? "↑" : "↓")</span>
+    </button>
+
+    @if (showDetails)
+    {
+        <dl class="pass-card__details">
+            <div>
+                <dt>Booking reference</dt>
+                <dd>@BookingReference</dd>
+            </div>
+            <div>
+                <dt>Passenger</dt>
+                <dd>@PassengerName</dd>
+            </div>
+            <div>
+                <dt>Email</dt>
+                <dd>@PassengerEmail</dd>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(PassengerPhone))
+            {
+                <div>
+                    <dt>Phone</dt>
+                    <dd>@PassengerPhone</dd>
+                </div>
+            }
+            <div>
+                <dt>Booked on</dt>
+                <dd>@Fmt.DateTimeLong(Pass.CreatedAt)</dd>
+            </div>
+            <div>
+                <dt>Status</dt>
+                <dd>@StatusLabel</dd>
+            </div>
+        </dl>
+    }
+
+    <div class="pass-card__perforation" aria-hidden="true"></div>
+    <div class="pass-card__footer">
+        <span>SugboHop · Region 7</span>
+        <span>Admit one</span>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public FerryPassDto Pass { get; set; } = default!;
+    [Parameter, EditorRequired] public string PassengerName { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string PassengerEmail { get; set; } = string.Empty;
+    [Parameter] public string? PassengerPhone { get; set; }
+
+    private bool showDetails;
+
+    private string BookingReference => $"SGH-{Pass.Id:0000}";
+    private bool IsConfirmed => Pass.Status.Equals("confirmed", StringComparison.OrdinalIgnoreCase);
+    private string StatusLabel => IsConfirmed
+        ? "Confirmed"
+        : Pass.Status.Equals("cancelled", StringComparison.OrdinalIgnoreCase) ? "Cancelled" : Pass.Status;
+    private string StatusClass => IsConfirmed
+        ? "pass-card__status--confirmed"
+        : "pass-card__status--muted";
+}
