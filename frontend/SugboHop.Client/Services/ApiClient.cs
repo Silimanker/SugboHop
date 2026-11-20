@@ -46,7 +46,7 @@ public class ApiClient(HttpClient http, TokenStore tokens, ApiAuthStateProvider 
         catch (HttpRequestException)
         {
             throw new ApiException(
-                "Can't reach the SugboHop API. Is the Django server running on port 8000?", 0);
+                "Can't reach the SugboHop API. Check that the Django server is running and the API URL is correct.", 0);
         }
 
         if (res.IsSuccessStatusCode) return res;
