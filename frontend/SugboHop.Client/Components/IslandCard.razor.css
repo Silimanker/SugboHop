@@ -64,6 +64,23 @@
     color: #eaa939;
 }
 
+.card-featured {
+    position: absolute;
+    bottom: .8rem;
+    left: .8rem;
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 .55rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, .82);
+    color: #00ffbf;
+    font-size: .58rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
 .card-content {
     padding: 1rem 1rem .9rem;
 }
@@ -100,37 +117,86 @@
 
 .card-tagline {
     min-height: 1.3rem;
-    margin: .22rem 0 .8rem;
-    color: #82908f;
+    margin: .22rem 0 .35rem;
+    color: #168f94;
     font-size: .74rem;
+    font-weight: 700;
+}
+
+.card-description {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0 0 .75rem;
+    color: #71827f;
+    font-size: .68rem;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .card-divider {
     height: 1px;
+    margin-bottom: .7rem;
     background: #edf0ed;
 }
 
-.card-meta {
+.card-details {
+    display: grid;
+    gap: .45rem;
+    padding-bottom: .7rem;
+}
+
+.card-detail {
     display: flex;
-    justify-content: space-between;
-    gap: .4rem;
-    padding: .75rem 0 .8rem;
+    align-items: flex-start;
+    gap: .45rem;
     color: #6f8180;
-    font-size: .63rem;
+    font-size: .65rem;
+    line-height: 1.25;
 }
 
-.card-meta > span:first-child {
-    white-space: nowrap;
+.card-detail > span:last-child {
+    min-width: 0;
 }
 
-.card-meta > span:first-child span {
-    margin-right: .15rem;
-    color: #168f94;
-}
-
-.card-meta strong {
-    color: #31595b;
+.card-detail small {
+    display: block;
+    margin-bottom: .05rem;
+    color: #9aa8a6;
+    font-size: .55rem;
     font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.detail-icon {
+    width: 1.15rem;
+    color: #168f94;
+    font-size: .85rem;
+    text-align: center;
+}
+
+.card-price {
+    display: flex;
+    align-items: baseline;
+    gap: .25rem;
+    margin-bottom: .6rem;
+    padding: .45rem .55rem;
+    border-radius: 6px;
+    background: #f3faf8;
+    color: #6f8180;
+    font-size: .65rem;
+}
+
+.card-price strong {
+    color: #31595b;
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.card-price span {
+    color: #9aa8a6;
+    font-size: .58rem;
 }
 
 .card-explore {
@@ -198,13 +264,13 @@
         line-height: 1.4;
     }
 
-    .card-meta {
-        min-height: 2.6rem;
-        flex-direction: column;
-        justify-content: center;
-        gap: .28rem;
-        padding: .5rem 0;
-        font-size: .57rem;
+    .card-description {
+        -webkit-line-clamp: 3;
+    }
+
+    .card-details {
+        gap: .5rem;
+        padding-bottom: .6rem;
     }
 
     .card-explore {
