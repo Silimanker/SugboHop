@@ -10,7 +10,7 @@
 {
     <div class="max-w-3xl mx-auto p-6">
         <div class="rounded-2xl border border-sugbo-sunrise bg-sugbo-sunrise/10 p-4 text-sm">@error</div>
-        <a href="" class="mt-4 inline-block text-sm font-bold text-sugbo-cyan hover:underline">← Back to islands</a>
+        <a href="/" class="mt-4 inline-block text-sm font-bold text-sugbo-cyan hover:underline">← Back to islands</a>
     </div>
 }
 else if (island is null)
@@ -19,81 +19,227 @@ else if (island is null)
 }
 else
 {
-    <div class="relative h-64 w-full">
+    <div class="relative h-[22rem] w-full overflow-hidden">
         <img src="@island.HeroImage" alt="@island.Name" class="w-full h-full object-cover" />
-        <div class="absolute inset-0 bg-gradient-to-t from-sugbo-dark to-transparent p-6 flex items-end">
-            <div>
-                <h1 class="font-heading text-3xl font-extrabold text-white">@island.Name</h1>
-                <p class="text-sm text-sugbo-mint font-semibold">@island.Tagline</p>
+        <div class="absolute inset-0 bg-gradient-to-t from-sugbo-dark via-sugbo-dark/50 to-transparent"></div>
+        <div class="absolute inset-x-0 bottom-0">
+            <div class="max-w-7xl mx-auto px-6 pb-8">
+                <a href="/" class="text-xs font-bold text-white/80 hover:text-white hover:underline">← All islands</a>
+                <span class="mt-3 inline-block rounded-full bg-sugbo-mint/20 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-sugbo-mint">
+                    @island.LocationRegion
+                </span>
+                <h1 class="mt-2 font-heading text-4xl font-extrabold text-white sm:text-5xl">@island.Name</h1>
+                <p class="mt-1 text-sm font-semibold text-sugbo-mint sm:text-base">@island.Tagline</p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">★ @RatingText / 5</span>
+                    <span class="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">◷ @Fmt.Duration(island.FerryDurationMins) by ferry</span>
+                    <span class="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">@StayCountLabel</span>
+                    @if (island.IsFeatured)
+                    {
+                        <span class="rounded-full bg-sugbo-sunrise px-3 py-1 text-xs font-bold text-sugbo-dark">Featured escape</span>
+                    }
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 class="font-heading text-lg font-bold mb-2">About @island.Name</h2>
-                <p class="text-xs text-slate-600 leading-relaxed">@island.Description</p>
-                <p class="mt-3 text-xs text-slate-500">
-                    @island.LocationRegion • @(island.FerryDurationMins)-min ferry • ★ @island.Rating.ToString("0.0", CultureInfo.InvariantCulture)
-                </p>
+    <div class="border-b border-slate-100 bg-white">
+        <div class="max-w-7xl mx-auto grid grid-cols-2 gap-4 px-6 py-5 md:grid-cols-4">
+            <div>
+                <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Region</span>
+                <strong class="mt-1 block text-sm text-sugbo-dark">@island.LocationRegion</strong>
             </div>
+            <div>
+                <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Ferry time</span>
+                <strong class="mt-1 block text-sm text-sugbo-dark">@Fmt.Duration(island.FerryDurationMins)</strong>
+            </div>
+            <div>
+                <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Fares from</span>
+                <strong class="mt-1 block text-sm text-sugbo-dark">@(CheapestFare.HasValue ? Fmt.Peso(CheapestFare.Value) : "—")</strong>
+            </div>
+            <div>
+                <span class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Stays from</span>
+                <strong class="mt-1 block text-sm text-sugbo-dark">@(CheapestStay.HasValue ? Fmt.Peso(CheapestStay.Value) : "—")</strong>
+            </div>
+        </div>
+    </div>
 
-            <div class="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 class="font-heading text-lg font-bold mb-3">Dockside Stays</h2>
-                @if (island.Stays.Count == 0)
-                {
-                    <p class="text-xs text-slate-500">No stays listed yet.</p>
-                }
-                @foreach (var stay in island.Stays)
-                {
-                    <div class="flex items-center gap-4 py-2">
-                        <img src="@stay.ImageUrl" alt="@stay.Name" class="w-16 h-16 rounded-xl object-cover" />
-                        <div class="flex-1">
-                            <div class="font-bold text-sm">@stay.Name</div>
-                            <div class="text-xs text-slate-500">@stay.StayType</div>
+    <div class="max-w-7xl mx-auto grid grid-cols-1 gap-6 p-6 lg:grid-cols-3">
+        <div class="space-y-6 lg:col-span-2">
+            <section class="rounded-2xl border border-slate-100 bg-white p-6">
+                <h2 class="mb-2 font-heading text-lg font-bold">About @island.Name</h2>
+                <p class="text-sm leading-relaxed text-slate-600">@island.Description</p>
+                <p class="mt-4 border-t border-slate-100 pt-4 text-xs text-slate-500">
+                    Located in @island.LocationRegion, about @Fmt.Duration(island.FerryDurationMins) from the mainland by ferry.
+                    Rated <strong class="text-sugbo-dark">@RatingText / 5</strong> by hoppers.
+                </p>
+            </section>
+
+            <section class="rounded-2xl border border-sugbo-cyan/20 bg-gradient-to-br from-sugbo-cyan/10 to-sugbo-mint/10 p-6">
+                <h2 class="font-heading text-lg font-bold">Why hoppers love it</h2>
+                <ul class="mt-4 space-y-4">
+                    <li class="flex gap-3">
+                        <span class="mt-0.5 text-sugbo-cyan" aria-hidden="true">✦</span>
+                        <div>
+                            <strong class="block text-sm text-sugbo-dark">@island.Tagline</strong>
+                            <span class="text-xs text-slate-500">The experience this island is best known for.</span>
                         </div>
-                        <div class="text-sm font-bold text-sugbo-dark">@Fmt.Peso(stay.PricePerNight)<span class="text-xs font-normal text-slate-500"> / night</span></div>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="mt-0.5 text-sugbo-cyan" aria-hidden="true">✦</span>
+                        <div>
+                            <strong class="block text-sm text-sugbo-dark">@StayCountLabel to choose from</strong>
+                            <span class="text-xs text-slate-500">
+                                @(CheapestStay.HasValue ? $"Rates start at {Fmt.Peso(CheapestStay.Value)} per night." : "Stay listings are coming soon.")
+                            </span>
+                        </div>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="mt-0.5 text-sugbo-cyan" aria-hidden="true">✦</span>
+                        <div>
+                            <strong class="block text-sm text-sugbo-dark">Easy ferry access</strong>
+                            <span class="text-xs text-slate-500">
+                                @(PrimaryOperator is null
+                                    ? "Ferry schedules are being arranged."
+                                    : $"Departures from {PrimaryOrigin} with {PrimaryOperator}.")
+                            </span>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <section class="rounded-2xl border border-slate-100 bg-white p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="font-heading text-lg font-bold">Getting there</h2>
+                        <p class="text-xs text-slate-500">Pick a sailing, then reserve your pass.</p>
+                    </div>
+                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">@routes.Count sailings</span>
+                </div>
+
+                @if (routes.Count == 0)
+                {
+                    <p class="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No ferry schedules have been added for this island yet.</p>
+                }
+                else
+                {
+                    <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                        @foreach (var route in routes)
+                        {
+                            <button type="button" @onclick="() => SelectRoute(route.Id)"
+                                    class="rounded-xl border p-4 text-left transition @(Route?.Id == route.Id ? "border-sugbo-cyan bg-sugbo-cyan/5 ring-2 ring-sugbo-cyan/20" : "border-slate-200 hover:border-sugbo-cyan/60")">
+                                <div class="flex items-start justify-between gap-2">
+                                    <span class="text-sm font-bold text-sugbo-dark">@route.Origin → @island.Name</span>
+                                    <strong class="whitespace-nowrap text-sm text-sugbo-dark">@Fmt.Peso(route.Price)</strong>
+                                </div>
+                                <p class="mt-2 text-xs text-slate-500">@route.OperatorName • Departs @Fmt.Time(route.DepartureTime)</p>
+                                @if (Route?.Id == route.Id)
+                                {
+                                    <span class="mt-3 inline-block text-[11px] font-bold uppercase tracking-wider text-sugbo-cyan">Selected for booking</span>
+                                }
+                            </button>
+                        }
                     </div>
                 }
+            </section>
+
+            <section class="rounded-2xl border border-slate-100 bg-white p-6">
+                <div class="flex items-center justify-between gap-3">
+                    <h2 class="font-heading text-lg font-bold">Where to stay</h2>
+                    <span class="text-xs text-slate-500">@StayCountLabel</span>
+                </div>
+                @if (island.Stays.Count == 0)
+                {
+                    <p class="mt-4 rounded-xl bg-slate-50 p-4 text-sm text-slate-500">No stays have been listed for this island yet.</p>
+                }
+                else
+                {
+                    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                        @foreach (var stay in island.Stays)
+                        {
+                            <article class="overflow-hidden rounded-xl border border-slate-100">
+                                <img src="@stay.ImageUrl" alt="@stay.Name" class="h-32 w-full object-cover" loading="lazy" />
+                                <div class="p-4">
+                                    <h3 class="font-heading text-sm font-bold text-sugbo-dark">@stay.Name</h3>
+                                    <p class="mt-0.5 text-xs text-slate-500">@stay.StayType</p>
+                                    <p class="mt-3 font-bold text-sugbo-dark">@Fmt.Peso(stay.PricePerNight)<span class="text-xs font-normal text-slate-500"> / night</span></p>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+
+        <aside class="space-y-6">
+            <div class="rounded-2xl bg-sugbo-dark p-6 text-white lg:sticky lg:top-6">
+                <h3 class="font-heading font-bold text-sugbo-mint">Reserve Ferry Pass</h3>
+
+                @if (Route is null)
+                {
+                    <p class="mt-3 text-xs text-slate-300">No ferry schedule available yet.</p>
+                }
+                else
+                {
+                    <div class="mt-3 rounded-xl bg-white/5 p-3">
+                        <p class="text-sm font-semibold">@Route.Origin → @island.Name</p>
+                        <p class="mt-1 text-xs text-slate-300">@Route.OperatorName • Departs @Fmt.Time(Route.DepartureTime)</p>
+                        <p class="mt-2 text-xs font-bold text-sugbo-mint">Fare @Fmt.Peso(Route.Price)</p>
+                    </div>
+
+                    <label class="mb-1 mt-4 block text-xs font-bold uppercase tracking-wider text-slate-400">Travel date</label>
+                    <input type="date" min="@todayText" value="@travelDate"
+                           @oninput="e => travelDate = e.Value?.ToString() ?? string.Empty"
+                           class="w-full rounded-xl bg-white px-3 py-2 text-sm text-sugbo-dark" />
+
+                    @if (bookingError is not null)
+                    {
+                        <p class="mt-3 text-xs font-semibold text-sugbo-sunrise">@bookingError</p>
+                    }
+                    @if (booked)
+                    {
+                        <p class="mt-3 text-xs font-semibold text-sugbo-mint">
+                            Pass confirmed! <a href="profile" class="underline">View in My Profile</a>
+                        </p>
+                    }
+
+                    <button type="button" @onclick="BookAsync" disabled="@booking"
+                            class="mt-4 w-full rounded-xl bg-sugbo-cyan py-2 text-xs font-bold text-sugbo-dark disabled:opacity-60">
+                        @(booking ? "Booking…" : $"Book Pass ({Fmt.Peso(Route.Price)})")
+                    </button>
+                }
             </div>
-        </div>
 
-        <div class="bg-sugbo-dark text-white p-6 rounded-2xl h-fit">
-            <h3 class="font-heading font-bold text-sugbo-mint">Reserve Ferry Pass</h3>
-
-            @if (Route is null)
-            {
-                <p class="mt-3 text-xs text-slate-300">No ferry schedule available yet.</p>
-            }
-            else
-            {
-                <p class="mt-3 text-sm font-semibold">@Route.Origin → @island.Name</p>
-                <p class="text-xs text-slate-300">@Route.OperatorName • Departs @Fmt.Time(Route.DepartureTime)</p>
-
-                <label class="block mt-4 text-xs font-bold uppercase text-slate-400 mb-1">Travel date</label>
-                <input type="date" min="@todayText" value="@travelDate"
-       @oninput="e => travelDate = e.Value?.ToString() ?? string.Empty"
-                       class="w-full px-3 py-2 rounded-xl bg-white text-sugbo-dark text-sm" />
-
-                @if (bookingError is not null)
-                {
-                    <p class="mt-3 text-xs text-sugbo-sunrise font-semibold">@bookingError</p>
-                }
-                @if (booked)
-                {
-                    <p class="mt-3 text-xs text-sugbo-mint font-semibold">
-                        Pass confirmed! <a href="profile" class="underline">View in My Profile</a>
-                    </p>
-                }
-
-                <button type="button" @onclick="BookAsync" disabled="@booking"
-                        class="w-full mt-4 py-2 bg-sugbo-cyan text-sugbo-dark font-bold text-xs rounded-xl disabled:opacity-60">
-                    @(booking ? "Booking…" : $"Book Pass ({Fmt.Peso(Route.Price)})")
-                </button>
-            }
-        </div>
+            <div class="rounded-2xl border border-slate-100 bg-white p-6">
+                <h3 class="font-heading font-bold">Good to know</h3>
+                <ul class="mt-3 space-y-3 text-xs text-slate-600">
+                    <li class="flex justify-between gap-3"><span>Travel time</span><strong>@Fmt.Duration(island.FerryDurationMins)</strong></li>
+                    <li class="flex justify-between gap-3"><span>Rating</span><strong>@RatingText / 5</strong></li>
+                    <li class="flex justify-between gap-3"><span>Accommodation</span><strong>@StayCountLabel</strong></li>
+                    <li class="flex justify-between gap-3"><span>Region</span><strong>@island.LocationRegion</strong></li>
+                </ul>
+            </div>
+        </aside>
     </div>
+
+    @if (relatedIslands.Count > 0)
+    {
+        <section class="mx-auto max-w-7xl px-6 pb-12">
+            <div class="mb-4 flex items-end justify-between gap-4">
+                <div>
+                    <span class="section-kicker">KEEP EXPLORING</span>
+                    <h2 class="font-heading text-xl font-bold">More islands to fall for</h2>
+                </div>
+                <a href="/" class="text-xs font-bold text-sugbo-cyan hover:underline">See all islands →</a>
+            </div>
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach (var item in relatedIslands)
+                {
+                    <IslandCard Island="item" />
+                }
+            </div>
+        </section>
+    }
 }
 
 @code {
@@ -101,30 +247,64 @@ else
 
     private IslandDto? island;
     private List<TransitRouteDto> routes = new();
+    private List<IslandDto> relatedIslands = new();
     private string? error;
     private string? bookingError;
     private bool booking;
     private bool booked;
+    private int? selectedRouteId;
     private readonly string todayText = DateTime.Today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     private string travelDate = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-    private TransitRouteDto? Route => routes.FirstOrDefault();
+    private TransitRouteDto? Route => routes.FirstOrDefault(r => r.Id == selectedRouteId) ?? routes.FirstOrDefault();
+    private decimal? CheapestFare => routes.Count == 0 ? null : routes.Min(r => r.Price);
+    private decimal? CheapestStay => island is null || island.Stays.Count == 0 ? null : island.Stays.Min(s => s.PricePerNight);
+    private string RatingText => island?.Rating.ToString("0.0", CultureInfo.InvariantCulture) ?? "—";
+    private string StayCountLabel => island?.Stays.Count == 1 ? "1 stay" : $"{island?.Stays.Count ?? 0} stays";
+    private string? PrimaryOrigin => routes.FirstOrDefault()?.Origin;
+    private string? PrimaryOperator => routes.FirstOrDefault()?.OperatorName;
 
     protected override async Task OnParametersSetAsync()
     {
         island = null;
+        routes = new();
+        relatedIslands = new();
+        selectedRouteId = null;
         error = null;
-        booked = false;
         bookingError = null;
+        booked = false;
+
         try
         {
             island = await Catalog.GetIslandAsync(Slug);
             routes = await Catalog.GetRoutesAsync(Slug);
+            selectedRouteId = routes.FirstOrDefault()?.Id;
+
+            try
+            {
+                var all = await Catalog.GetIslandsAsync(featuredOnly: true);
+                relatedIslands = all
+                    .Where(i => !string.Equals(i.Slug, Slug, StringComparison.OrdinalIgnoreCase))
+                    .Take(3)
+                    .ToList();
+            }
+            catch (ApiException)
+            {
+                relatedIslands = new();
+            }
         }
         catch (ApiException ex)
         {
             error = ex.StatusCode == 404 ? "We couldn't find that island." : ex.Message;
         }
+    }
+
+    private void SelectRoute(int routeId)
+    {
+        if (selectedRouteId == routeId) return;
+        selectedRouteId = routeId;
+        bookingError = null;
+        booked = false;
     }
 
     private async Task BookAsync()

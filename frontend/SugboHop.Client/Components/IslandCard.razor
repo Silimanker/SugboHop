@@ -19,7 +19,7 @@
         <div class="card-details">
             <div class="card-detail">
                 <span class="detail-icon" aria-hidden="true">◷</span>
-                <span><small>Ferry</small>@FerryDuration</span>
+                <span><small>Ferry</small>@Fmt.Duration(Island.FerryDurationMins)</span>
             </div>
             <div class="card-detail">
                 <span class="detail-icon" aria-hidden="true">⌖</span>
@@ -44,9 +44,6 @@
     [Parameter, EditorRequired] public IslandDto Island { get; set; } = default!;
 
     private string RegionLabel => Island.LocationRegion.Split(',')[0];
-    private string FerryDuration => Island.FerryDurationMins >= 60
-        ? $"{Island.FerryDurationMins / 60}h{(Island.FerryDurationMins % 60 == 0 ? string.Empty : $" {Island.FerryDurationMins % 60}m")}"
-        : $"{Island.FerryDurationMins} min";
     private string StayLabel => Island.Stays.Count switch
     {
         0 => "None listed",

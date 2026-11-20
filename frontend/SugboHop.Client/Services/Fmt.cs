@@ -10,6 +10,10 @@ public static class Fmt
     public static string Time(TimeSpan time) =>
         DateTime.Today.Add(time).ToString("hh:mm tt", CultureInfo.InvariantCulture);
 
+    public static string Duration(int minutes) => minutes >= 60
+        ? $"{minutes / 60}h{(minutes % 60 == 0 ? string.Empty : $" {minutes % 60}m")}"
+        : $"{minutes} min";
+
     public static string Date(DateOnly value) =>
         value.ToString("ddd, MMM d, yyyy", CultureInfo.InvariantCulture);
 
